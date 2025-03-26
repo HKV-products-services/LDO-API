@@ -1,0 +1,9 @@
+# large data files
+*.zip
+old*/
+*.docx
+# env data 
+.env
+# other folders
+__pycache__
+downloaded_tiffs
