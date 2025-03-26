@@ -7,3 +7,11 @@ Voor het raadplegen van het LDO via de API zijn voor LIWO een aantal scripts ont
 - `download_LDO_tiffs.py` download tiff bestanden gegenereerd door ssm/LDO.
 
 Met het notebook `export_SSM_metadata_uit_LDO_met_API.ipynb` kan de meta data worden geëxporteerd. Het script `export_SSM_metadata_uit_LDO_met_API.py` is hier identiek aan.
+
+Voor vragen: `haasnoot@hkv.nl`.
+
+## License
+
+Copyright (c) 2024 - 2025, HKV lijn in Water
+
+GPL 3.0 or later
