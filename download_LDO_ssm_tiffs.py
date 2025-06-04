@@ -1,5 +1,8 @@
 """
 gemaakt voor LIWO door  David Haasnoot (d.haasnoot@hkv.nl)
+
+# DOEL
+Download tiff bestanden gegenereerd door ssm/LDO.
 """
 
 from pathlib import Path
@@ -15,6 +18,21 @@ from tqdm import tqdm
 
 import logging
 
+"""
+Python bestand met helper functies voor het downloaden van .Tiff bestanden uit de LDO via de API van www.overstromingsinformatie.nl
+Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor stappen plan voor het aanmaken van een api key.
+"""
+
+
+# Set up basic logger
+current_dir = Path.cwd()
+log_file = current_dir / "log_tiff.txt"
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger()
 
 def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) -> None:
     names_tiffs_ssm = [
@@ -28,8 +46,10 @@ def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) 
         "max_velocity.tiff",
         "rate_of_rise.tiff",
         "arrival_times.tiff",
+        "max_waterdepth.tiff",
     ]
     export_dir = work_dir / "downloaded_tiffs"
+    export_dir.mkdir(exist_ok=True)
     missing_values = {}
     try:
         for scenario_id in tqdm(beschikbare_scenario_ids):
@@ -74,16 +94,7 @@ def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) 
 
 
 if __name__ == "__main__":
-    current_dir = Path.cwd()
 
-    # Set up basic logger
-    log_file = current_dir / "log_tiff.txt"
-    logging.basicConfig(
-        filename=log_file,
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
-    logger = logging.getLogger()
 
     # zet de LDO api key in de .env file
     if dotenv.load_dotenv():
@@ -94,14 +105,22 @@ if __name__ == "__main__":
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(
         maximum=10_000, headers=headers
-    )  # misschien later meer dan 10_000?
+    )  
 
-    logger.info("Vergelijk scenarios")  # toe te voegen
-    nieuwe_scenarios = beschikbare_scenario_ids
+    # geef de scenarios op om te exporteren:
+    export_scenarios = [345,346]
+    # of gebruik de een subset:
+    # export_scenarios = beschikbare_scenario_ids[:10]  # bijvoorbeeld de eerste 10 scenarios
+    logger.info("Vergelijk scenarios")
+    overlap_scenarios = list(set(export_scenarios).intersection(beschikbare_scenario_ids))
+    niet_gevonden_scenarios = list(set(export_scenarios).difference(beschikbare_scenario_ids))
+    if len(niet_gevonden_scenarios) > 0: 
+        logger.warning(f'{len(niet_gevonden_scenarios)} scenarios niet gevonden in LDO: {niet_gevonden_scenarios}')
+
 
     logger.info("Start export scenarios")
     lst_zips_nieuwe_export = export_tiffs(
-        nieuwe_scenarios,
+        overlap_scenarios,
         current_dir,
         headers=headers,
     )

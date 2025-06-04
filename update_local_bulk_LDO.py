@@ -1,5 +1,11 @@
 """
-gemaakt voor LIWO door  David Haasnoot (d.haasnoot@hkv.nl)
+gemaakt voor LIWO door David Haasnoot (d.haasnoot@hkv.nl)
+Jun, 2025
+
+
+# DOEL
+Download de bulk export en voegt dit toe aan een bestaande export.
+
 """
 
 import logging
@@ -15,12 +21,12 @@ import requests
 import dotenv
 import shutil
 
-""""
-OM een API key aan te maken
-
-onder end-point: POST https://www.overstromingsinformatie.nl/auth/v1/token 
-vervang body met 
-
+"""
+Stappen plan voor het aanmaken van een api key.
+- Login op https://www.overstromingsinformatie.nl/, dit loop via bij12.
+- Ga naar https://www.overstromingsinformatie.nl/auth/
+- Scrol naar beneden onder `V1` ,dan `POST auth/v1/personalapikeys` (in het groen) en klik deze open.
+- klik op `try it out` en vervang body met:
 ```json
 {
   "scope": "*:readwrite",
@@ -29,9 +35,26 @@ vervang body met
   "revoked": false
 }
 ```
-Bewaar die token in deen .env bestand
+- Pas de datum en name aan waar nodig
+- klik op `Excecute` in het blauw
+- scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 als het gelukt is.
+- In de response body staat: 
+```json
+{
+  "prefix": "xxxxx",
+  "scope": "*:readwrite",
+  "name": "personalAPIkeyLIWOexportTest2",
+  "expiry_date": "2029-12-31T23:59:59.037000Z",
+  "created": "2025-06-04T09:18:11.559373Z",
+  "revoked": false,
+  "last_used": null,
+  "key": "xxxxxx.yyyyyyyyyyyyyyy",
+  "message": "Please store the key somewhere safe, you will not be able to see it again."
+}
+```
+- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `example.env` voor het formaat.
+meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
 
-meer docs op https://www.overstromingsinformatie.nl/api/v1/docs
 """
 
 
@@ -198,15 +221,12 @@ if __name__ == "__main__":
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(
         maximum=10_000, headers=headers
-    )  # misschien later meer dan 10_000?
+    )  
 
     logger.info("Vergelijk scenarios")
     verwijderde_scenarios, nieuwe_scenarios, df_current_local_LDO = (
         vergelijke_nieuwe_en_huidige(current_archive, beschikbare_scenario_ids)
     )
-
-    # temp for debugging
-    # nieuwe_scenarios = nieuwe_scenarios[:1]
 
     logger.info("Start export scenarios")
     lst_zips_nieuwe_export = export_uit_LDO(

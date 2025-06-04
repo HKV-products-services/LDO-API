@@ -7,3 +7,4 @@ old*/
 # other folders
 __pycache__
 downloaded_tiffs
+log_*.txt

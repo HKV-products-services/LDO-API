@@ -1,5 +1,9 @@
 """
 gemaakt voor LIWO door  David Haasnoot (d.haasnoot@hkv.nl)
+Juni, 2025
+
+# DOEL
+Bevat functies voor interactie met de API, worden gebruikt door andere scripts.
 """
 
 import warnings
@@ -9,6 +13,11 @@ import time
 from datetime import datetime as date
 from typing import Optional
 from pathlib import Path
+
+"""
+Python bestand met helper functies voor het exporteren van scenario's uit de LDO via de API van www.overstromingsinformatie.nl
+Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor stappen plan voor het aanmaken van een api key.
+"""
 
 server = "https://www.overstromingsinformatie.nl"
 
@@ -71,6 +80,92 @@ def create_new_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
         raise UserWarning(f"{response.status_code}: {response.text}")
 
     return export_name, export_description, export_id
+
+def delete_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
+    """delete given bulk-export"""
+
+
+    response = requests.delete(
+        f"{server}/api/v1/bulk-exports/{index}", headers=headers
+    )
+
+    if int(response.status_code) == 204:
+        success = True
+    elif int(response.status_code) == 404:
+        success = False
+        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
+    else:   
+        success = False
+        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+
+    return success, response
+
+def delete_bulk_export_errors(headers: dict, index: int) -> tuple[str, str, str]:
+    """delete errors of given bulk-export"""
+
+
+    response = requests.delete(
+        f"{server}/api/v1/bulk-exports/{index}/errors", headers=headers
+    )
+
+    if response.status_code == 204:
+        success = True
+    elif response.status_code== 404:
+        success = False
+        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
+    else:   
+        success = False
+        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+
+    return success, response
+
+def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
+    """archvie given bulk-export"""
+
+    body = json.dumps({"status": "archived"})
+    response = requests.patch(
+        f"{server}/api/v1/bulk-exports/{index}", headers=headers, data=body
+    )
+
+    if int(response.status_code) == 200:
+        success = True
+    elif int(response.status_code) == 400:
+        success = False
+        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
+    else:   
+        success = False
+        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+
+    return success, response
+
+
+def list_bulk_export(headers: dict) -> tuple[str, str, str]:
+    """lists all the bulk-export"""
+
+
+    response = requests.get(
+        f"{server}/api/v1/bulk-exports", headers=headers
+    )
+
+    if response.status_code == 200:
+        data = response.json()["items"]
+        total, limit = response.json()['total'], response.json()['limit']
+        for i in range(limit, total+limit, limit):
+            response = requests.get(
+                f"{server}/api/v1/bulk-exports?limit={limit}&offset={i}",
+                headers=headers
+            )
+            if response.status_code == 200:
+                data.extend(response.json()["items"])
+            else:
+                raise UserWarning(f"{response.status_code}: {response.text}")
+        
+        pass
+    else:
+        # print(response.status_code, response.text)
+        raise UserWarning(f"{response.status_code}: {response.text}")
+
+    return data, response
 
 
 def check_export_id(export_id: str, headers: dict) -> requests.Response:

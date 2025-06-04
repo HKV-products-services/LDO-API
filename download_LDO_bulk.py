@@ -3,10 +3,10 @@ gemaakt voor LIWO door David Haasnoot (d.haasnoot@hkv.nl)
 Jun, 2025
 """
 
-import pandas as pd
+import logging
+from pathlib import Path
 import dotenv
-from update_local_bulk_LDO import haal_scenarios_op, haal_token_op
-from export_LDO import get_ssm
+from update_local_bulk_LDO import haal_scenarios_op, haal_token_op, export_uit_LDO
 
 """
 Stappen plan voor het aanmaken van een api key.
@@ -43,26 +43,38 @@ Stappen plan voor het aanmaken van een api key.
 meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
 
 """
+
+
 if __name__ == "__main__":
-    # haal de API key op uit de .env file
+    current_dir = Path.cwd()
+
+    # Set up basic logger
+    log_file = current_dir / "log_bulk.txt"
+    logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger()
+
+    # geef de scenarios op om te exporteren:
+    export_scenarios = [345,346]
+
+    # zet de LDO api key in de .env file
     if dotenv.load_dotenv():
         environmental_variables = dotenv.dotenv_values()
-        LDO_api_key = environmental_variables["LDO_api_key"]\
-    # Of zet hier de API key handmatig in
-    # LDO_api_key = "abcd"
+        LDO_api_key = environmental_variables["LDO_api_key"]
     headers = haal_token_op(LDO_api_key)
 
-    maximum = 10_000  
-    beschikbare_scenario_ids = haal_scenarios_op(maximum, headers)
+    logger.info("haal scenarios op")
+    beschikbare_scenario_ids = haal_scenarios_op(
+        maximum=10_000, headers=headers
+    )  # misschien later meer dan 10_000?
 
-    lst_json = [get_ssm(scenario, headers) for scenario in beschikbare_scenario_ids]
-    df_metadata = pd.DataFrame(lst_json)
-    df_metadata.set_index('scenario_id', inplace=True)
-    df_metadata.sort_index(inplace=True)
+    logger.info("Vergelijk scenarios")
+    overlap_scenarios = list(set(export_scenarios).intersection(beschikbare_scenario_ids))
+    niet_gevonden_scenarios = list(set(export_scenarios).difference(beschikbare_scenario_ids))
+    if len(niet_gevonden_scenarios) > 0: 
+        logger.warning(f'{len(niet_gevonden_scenarios)} scenarios niet gevonden in LDO: {niet_gevonden_scenarios}')
 
-    all_indexes = df_metadata.index
-    filled_scenarios = df_metadata.dropna(subset=['raster_types'])
-    df_metadata.to_excel('metadata_ssm.xlsx')
-    filled_scenarios.to_excel('metadata_ssm_filled.xlsx')
-
-
+    logger.info("Start export scenarios")
+    lst_zips_nieuwe_export = export_uit_LDO(
+        nieuwe_scenarios=overlap_scenarios,
+        headers=headers,
+    )
