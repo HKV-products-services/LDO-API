@@ -8,16 +8,14 @@ Download de bulk export en voegt dit toe aan een bestaande export.
 
 """
 
+import logging
 from pathlib import Path
 import zipfile
-from export_LDO import (
-    get_scenario_list,
-    combine_functions_start_export,
-    combine_functions_download_export,
-)
+from export_LDO import download_tif, get_all_metadata, get_scenario_list, get_layer_names, get_file_url
 import pandas as pd
 import requests
 import shutil
+from tqdm import tqdm
 
 """
 Stappen plan voor het aanmaken van een api key.
@@ -54,6 +52,17 @@ Stappen plan voor het aanmaken van een api key.
 meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
 
 """
+
+current_dir = Path(__file__).parent
+
+# Set up basic logger
+log_file = current_dir / "log_bulk.txt"
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger()
 
 
 def haal_token_op(api_key: str) -> dict:
@@ -101,25 +110,69 @@ def vergelijke_nieuwe_en_huidige(
     return verwijderde_scenarios, nieuwe_scenarios, df_current_local_LDO
 
 
-def export_uit_LDO_bulk(
-    nieuwe_scenarios: list, headers: dict, current_dir: Path = Path(__file__).parent
-) -> tuple[list, dict, pd.DataFrame]:
-    """Haal de nieuwe scenarios op uit het LDO, geef een lijst met de paden naar de gedownloade zips terug"""
-    # Start the exports
-    list_args = []  # tuple met (export_id, status, export_body) doorgeven van een functie naar de volgende
-    for index, id in enumerate(nieuwe_scenarios):
-        list_args.append(combine_functions_start_export(headers, index, [id]))
+def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.DataFrame:
+    """Haal de bestandsnamen van de scenarios op om vervolgens te exporteren"""
+    data = {ids: get_layer_names(ids, headers) for ids in nieuwe_scenarios}
+    max_length = max([len(data[ids]) for ids in data.keys()])
+    # Fill each names list to max_length with None
+    data = {ids: list(name) + [None] * (max_length - len(name)) for ids, name in data.items()}
+    return pd.DataFrame(data).T
 
-    # zodra alle exports zijn gestart, download ze.
-    for index, id_list in enumerate(nieuwe_scenarios):
-        combine_functions_download_export(headers, *list_args[index])
 
-    #  Met de export-id's, haal de metadata dataframes van de nieuwe scenario's op
-    nieuwe_scenarios_export_ids = [args[0] for args in list_args]
-    return [
-        current_dir / f"export_{export_id}.zip"
-        for export_id in nieuwe_scenarios_export_ids
-    ]
+
+def export_uit_LDO_custom(
+    df_layer_names: pd.DataFrame, work_dir: Path, headers: dict
+) -> None:
+    export_dir = work_dir / "downloaded_tiffs"
+    export_dir.mkdir(exist_ok=True)
+    missing_values = {}
+    error = None
+    try:
+        for scenario_id, row in tqdm(df_layer_names.iterrows()):
+            for file_name in row.tolist():
+                # valid_name = validate_file_name(file_name)
+                if file_name is None or file_name == "":
+                    continue
+                # Check if the file name is valid
+                status_code, url = get_file_url(scenario_id, file_name, headers)
+                if status_code == 200:
+                    try:
+                        download_tif(url, file_name, scenario_id, export_dir)
+                    except ConnectionError as e:
+                        logger.error(f"Connection error during download: {e}")
+                        # try again
+                        try:
+                            download_tif(url, file_name, scenario_id, export_dir)
+                        except ConnectionError as e:
+                            logger.error(
+                                f"Connection error during download (2nd try): {e}, {url}, {scenario_id}"
+                            )
+                            continue
+
+                else:
+                    logger.info(
+                        f"Failed to download {file_name} for scenario {scenario_id}: {url}"
+                    )
+                    if scenario_id in missing_values:
+                        missing_values[scenario_id].append(file_name)
+                    else:
+                        missing_values[scenario_id] = [file_name]
+
+        error = get_all_metadata(
+            scenario_ids=df_layer_names.index.tolist(),
+            fname=export_dir / "metadata.xlsx",
+            headers=headers,
+        )
+    except Exception as e:
+        logger.error(f"Error during download: {e} {error}")
+
+    # still write the missing values to a csv & zip
+    missing_values_df = pd.DataFrame.from_dict(missing_values, orient="index")
+    missing_values_df.to_csv(export_dir / "missing_values.csv")
+    with zipfile.ZipFile(work_dir / "downloaded_tiffs.zip", "w") as zipf:
+        for file in export_dir.iterdir():
+            zipf.write(file, file.name)
+
 
 
 
@@ -195,8 +248,3 @@ def voeg_zips_samen_verwijder_ouder(
     with zipfile.ZipFile(new_archive, "a") as output_archive:
         # als laaste voeg de meta data weer toe
         output_archive.write(excel_output_dir, arcname=excel_name_in_zip)
-
-
-# if __name__ == "__main__":
-# gebruik de download_LDO_*.py om de LDO te downloaden en de scenarios te exporteren.
-# dit bestand is alleen bron van de functies die gebruikt worden in de notebooks/tools.

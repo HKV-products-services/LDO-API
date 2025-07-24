@@ -81,28 +81,29 @@ def create_new_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
 
     return export_name, export_description, export_id
 
+
 def delete_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
     """delete given bulk-export"""
 
-
-    response = requests.delete(
-        f"{server}/api/v1/bulk-exports/{index}", headers=headers
-    )
+    response = requests.delete(f"{server}/api/v1/bulk-exports/{index}", headers=headers)
 
     if int(response.status_code) == 204:
         success = True
     elif int(response.status_code) == 404:
         success = False
-        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
-    else:   
+        warnings.warn(
+            f"Bulk export with id {index} not found, it may have already been deleted.",
+            category=RuntimeWarning,
+        )
+    else:
         success = False
-        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+        warnings.warn(f"{response.status_code}: {response.text}", category=UserWarning)
 
     return success, response
 
+
 def delete_bulk_export_errors(headers: dict, index: int) -> tuple[str, str, str]:
     """delete errors of given bulk-export"""
-
 
     response = requests.delete(
         f"{server}/api/v1/bulk-exports/{index}/errors", headers=headers
@@ -110,14 +111,18 @@ def delete_bulk_export_errors(headers: dict, index: int) -> tuple[str, str, str]
 
     if response.status_code == 204:
         success = True
-    elif response.status_code== 404:
+    elif response.status_code == 404:
         success = False
-        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
-    else:   
+        warnings.warn(
+            f"Bulk export with id {index} not found, it may have already been deleted.",
+            category=RuntimeWarning,
+        )
+    else:
         success = False
-        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+        warnings.warn(f"{response.status_code}: {response.text}", category=UserWarning)
 
     return success, response
+
 
 def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
     """archvie given bulk-export"""
@@ -131,10 +136,13 @@ def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
         success = True
     elif int(response.status_code) == 400:
         success = False
-        warnings.warn(f"Bulk export with id {index} not found, it may have already been deleted.",category=RuntimeWarning)
-    else:   
+        warnings.warn(
+            f"Bulk export with id {index} not found, it may have already been deleted.",
+            category=RuntimeWarning,
+        )
+    else:
         success = False
-        warnings.warn(f"{response.status_code}: {response.text}",category=UserWarning)
+        warnings.warn(f"{response.status_code}: {response.text}", category=UserWarning)
 
     return success, response
 
@@ -142,24 +150,21 @@ def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
 def list_bulk_export(headers: dict) -> tuple[str, str, str]:
     """lists all the bulk-export"""
 
-
-    response = requests.get(
-        f"{server}/api/v1/bulk-exports", headers=headers
-    )
+    response = requests.get(f"{server}/api/v1/bulk-exports", headers=headers)
 
     if response.status_code == 200:
         data = response.json()["items"]
-        total, limit = response.json()['total'], response.json()['limit']
-        for i in range(limit, total+limit, limit):
+        total, limit = response.json()["total"], response.json()["limit"]
+        for i in range(limit, total + limit, limit):
             response = requests.get(
                 f"{server}/api/v1/bulk-exports?limit={limit}&offset={i}",
-                headers=headers
+                headers=headers,
             )
             if response.status_code == 200:
                 data.extend(response.json()["items"])
             else:
                 raise UserWarning(f"{response.status_code}: {response.text}")
-        
+
         pass
     else:
         # print(response.status_code, response.text)
@@ -325,9 +330,7 @@ def get_file_url(scenario_id: str, layer_name: str, headers: dict) -> str:
         return response.status_code, response.text
 
 
-def download_tif(
-    url: str,  name:str, export_id:str, work_dir: Path
-) -> None:
+def download_tif(url: str, name: str, export_id: str, work_dir: Path) -> None:
     """download een tif bestand"""
     response = requests.get(url, stream=True)
 
@@ -337,14 +340,13 @@ def download_tif(
     if name.startswith("scenario_"):
         new_name = "_".join(name.split("_")[2:])
     else:
-        new_name = name 
+        new_name = name
     fname = export_path / new_name
-    
+
     with open(fname, "wb") as f:
         for chunk in response.iter_content(chunk_size=512):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
-
 
 
 def get_ssm(scenario_id: str, headers: dict) -> str:
@@ -408,9 +410,11 @@ def combine_functions_download_export(
 def status_update(export_id: str, headers: dict) -> str:
     """haal de status van de export op"""
 
-    body = { "status": "quality_checked" }
+    body = {"status": "quality_checked"}
     response = requests.patch(
-        f"{server}/api/v1/scenarios/{export_id}/status", headers=headers,body=body,
+        f"{server}/api/v1/scenarios/{export_id}/status",
+        headers=headers,
+        body=body,
     )
 
     if response.status_code == 200:
@@ -419,3 +423,36 @@ def status_update(export_id: str, headers: dict) -> str:
     else:
         warnings.warn(f"{response.status_code}: {response.text}")
         return None
+
+
+def get_layer_names(export_id: str, headers: dict) -> str:
+    """haal de bestandsnaam van een scenario op om vervolgens te exporteren"""
+    response = requests.get(f"{server}/api/v1/scenarios/{export_id}", headers=headers)
+
+    if response.status_code == 200:
+        names = response.json()["files"].keys()
+        return list(names)
+    else:
+        warnings.warn(f"{response.status_code}: {response.text}")
+        return None
+
+
+def get_all_metadata(scenario_ids: list, fname: Path, headers: dict) -> str:
+    """haal de bestanden van de export op"""
+    data = dict()
+    data["id"] = scenario_ids
+    response = requests.post(
+        f"{server}/api/v1/scenarios/export",
+        data=json.dumps(data).replace(" ", ""),
+        headers=headers,
+        stream=True,
+    )
+
+    if response.status_code == 200:
+        with open(fname, "wb") as f:
+            for chunk in response.iter_content(chunk_size=512):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+
+    else:
+        return response.status_code, response.text

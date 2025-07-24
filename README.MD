@@ -38,7 +38,7 @@ Stappen plan voor het aanmaken van een api key.
 - Pas de datum en name aan waar nodig
 - klik op `Excecute` in het blauw
 - scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 als het gelukt is.
-- In de response body staat: 
+- In de response body staat:
 
 ```json
 {

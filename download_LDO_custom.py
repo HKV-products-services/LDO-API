@@ -6,7 +6,7 @@ Jun, 2025
 import logging
 from pathlib import Path
 import dotenv
-from update_local_bulk_LDO import haal_scenarios_op, haal_token_op, export_uit_LDO_bulk
+from update_local_LDO_custom import get_layer_names_from_scenario, haal_scenarios_op, haal_token_op, export_uit_LDO_custom
 
 """
 Stappen plan voor het aanmaken van een api key.
@@ -73,8 +73,11 @@ if __name__ == "__main__":
     if len(niet_gevonden_scenarios) > 0: 
         logger.warning(f'{len(niet_gevonden_scenarios)} scenarios niet gevonden in LDO: {niet_gevonden_scenarios}')
 
+    df_layer_names = get_layer_names_from_scenario( overlap_scenarios, headers=headers,)
+
     logger.info("Start export scenarios")
-    lst_zips_nieuwe_export = export_uit_LDO_bulk(
-        nieuwe_scenarios=overlap_scenarios,
+    lst_zips_nieuwe_export = export_uit_LDO_custom(
+        df_layer_names=df_layer_names,
+        work_dir=current_dir,
         headers=headers,
     )
