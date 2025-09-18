@@ -81,12 +81,12 @@ def haal_token_op(api_key: str) -> dict:
     return headers
 
 
-def haal_scenarios_op(maximum: int, headers: dict) -> list:
+def haal_scenarios_op(maximum: int, headers: dict, extra_filter: str = "") -> list:
     """ "Haal de scenario ids op"""
     limit_per_request = 100
     offset = 0
     beschikbare_scenario_ids = get_scenario_list(
-        offset, limit_per_request, maximum, headers
+        offset, limit_per_request, maximum, headers, extra_filter=extra_filter
     )
     return beschikbare_scenario_ids
 

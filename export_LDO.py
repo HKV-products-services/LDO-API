@@ -22,10 +22,10 @@ Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor st
 server = "https://www.overstromingsinformatie.nl"
 
 
-def get_scenario_subset(mode, limit_per_request, offset, headers):
+def get_scenario_subset(mode, limit_per_request, offset, headers, extra_filter=""):
     """Get list of scenarios status landelijk gebruik (mode=public)"""
     response = requests.get(
-        f"{server}/api/v1/scenarios?mode={mode}&limit={limit_per_request}&offset={offset}&order_by=id",
+        f"{server}/api/v1/scenarios?mode={mode}&limit={limit_per_request}&offset={offset}&order_by=id{extra_filter}",
         headers=headers,
     )
     if response.status_code == 200:
@@ -43,12 +43,14 @@ def get_scenario_subset(mode, limit_per_request, offset, headers):
     return scenario_list
 
 
-def get_scenario_list(offset, limit_per_request, maximum, headers):
+def get_scenario_list(offset, limit_per_request, maximum, headers, extra_filter=""):
     mode = "public"
     scenario_ids = []
 
     for offset in range(0, maximum, limit_per_request):
-        scenario_ids += get_scenario_subset(mode, limit_per_request, offset, headers)
+        scenario_ids += get_scenario_subset(
+            mode, limit_per_request, offset, headers, extra_filter=extra_filter
+        )
 
     return scenario_ids
 
