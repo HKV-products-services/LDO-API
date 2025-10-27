@@ -63,7 +63,10 @@ def haal_token_op(api_key: str) -> dict:
     response = requests.post(
         url=url_auth, headers=headers, json={"tenant": 1}, auth=("__key__", api_key)
     )
-    id_token = response.json()["access"]
+    try:
+        id_token = response.json()["access"]
+    except KeyError:
+        raise UserWarning(f"Failed to retrieve access token: {response.text}")
     headers = {
         "accept": "application/json",
         "Content-Type": "application/json",
