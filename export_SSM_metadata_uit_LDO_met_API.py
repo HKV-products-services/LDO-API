@@ -24,7 +24,8 @@ Stappen plan voor het aanmaken van een api key.
 ```
 - Pas de datum en name aan waar nodig
 - klik op `Excecute` in het blauw
-- scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 als het gelukt is.
+- scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 
+    als het gelukt is.
 - In de response body staat: 
 ```json
 {
@@ -39,9 +40,14 @@ Stappen plan voor het aanmaken van een api key.
   "message": "Please store the key somewhere safe, you will not be able to see it again."
 }
 ```
-- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `example.env` voor het formaat.
+- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `.env.example` voor het formaat.
 meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
-
+- Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele aan 
+    te passen. Deze kan ook in de `.env` file worden gezet.
+  - `TENANT = 0` voor beheerders? 
+  - `TENANT = 1` voor LIWO
+  - `TENANT = 2` voor RWS
+  ...
 """
 if __name__ == "__main__":
     # haal de API key op uit de .env file
@@ -50,7 +56,8 @@ if __name__ == "__main__":
         LDO_api_key = environmental_variables["LDO_api_key"]\
     # Of zet hier de API key handmatig in
     # LDO_api_key = "abcd"
-    headers = haal_token_op(LDO_api_key)
+    TENANT : int  = 1 # 0, 1, 2 ...
+    headers = haal_token_op(LDO_api_key, tenant=TENANT)
 
     maximum = 10_000  
     beschikbare_scenario_ids = haal_scenarios_op(maximum, headers)

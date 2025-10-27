@@ -39,9 +39,15 @@ Stappen plan voor het aanmaken van een api key.
   "message": "Please store the key somewhere safe, you will not be able to see it again."
 }
 ```
-- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `example.env` voor het formaat.
+- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `.env.example` voor het formaat.
 meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
 
+- Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele 
+aan te passen. Deze kan ook in de `.env` file worden gezet.
+  - `TENANT = 0` voor beheerders? 
+  - `TENANT = 1` voor LIWO
+  - `TENANT = 2` voor RWS
+  ...
 """
 
 
@@ -60,7 +66,9 @@ if __name__ == "__main__":
     if dotenv.load_dotenv():
         environmental_variables = dotenv.dotenv_values()
         LDO_api_key = environmental_variables["LDO_api_key"]
-    headers = haal_token_op(LDO_api_key)
+        TENANT = int(environmental_variables.get("TENANT", 1))
+
+    headers = haal_token_op(LDO_api_key, tenant=TENANT)
 
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(

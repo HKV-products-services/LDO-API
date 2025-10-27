@@ -50,18 +50,23 @@ Stappen plan voor het aanmaken van een api key.
   "message": "Please store the key somewhere safe, you will not be able to see it again."
 }
 ```
-- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `example.env` voor het formaat.
+- Bewaar die hele `'key'` in een bestand die `.env` heet, zie `.env.example` voor het formaat.
 meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
-
+- Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele 
+    aan te passen. Deze kan ook in de `.env` file worden gezet.
+  - `TENANT = 0` voor beheerders? 
+  - `TENANT = 1` voor LIWO
+  - `TENANT = 2` voor RWS
+  ...
 """
 
 
-def haal_token_op(api_key: str) -> dict:
+def haal_token_op(api_key: str, tenant:int) -> dict:
     """Haal de access token op voor www.overstromingsinformatie.nl gegeven de api key"""
     url_auth = "https://www.overstromingsinformatie.nl/auth/v1/token/"
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     response = requests.post(
-        url=url_auth, headers=headers, json={"tenant": 1}, auth=("__key__", api_key)
+        url=url_auth, headers=headers, json={"tenant": tenant}, auth=("__key__", api_key)
     )
     try:
         id_token = response.json()["access"]

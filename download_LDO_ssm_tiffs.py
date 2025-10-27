@@ -100,7 +100,10 @@ if __name__ == "__main__":
     if dotenv.load_dotenv():
         environmental_variables = dotenv.dotenv_values()
         LDO_api_key = environmental_variables["LDO_api_key"]
-    headers = haal_token_op(LDO_api_key)
+        TENANT = int(environmental_variables.get("TENANT", 1))
+
+    # TENANT : int  = 1 # 0, 1, 2 ...
+    headers = haal_token_op(LDO_api_key, tenant=TENANT)
 
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(
