@@ -336,7 +336,7 @@ def download_tif(url: str, name: str, export_id: str, work_dir: Path) -> None:
     """download een tif bestand"""
     response = requests.get(url, stream=True)
 
-    export_path = work_dir / f"scenario_{export_id}"
+    export_path = work_dir / f"{export_id}"
     if not export_path.exists():
         export_path.mkdir()
     if name.startswith("scenario_"):
