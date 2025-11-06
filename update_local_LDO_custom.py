@@ -185,8 +185,10 @@ def export_uit_LDO_custom(
     missing_values_df = pd.DataFrame.from_dict(missing_values, orient="index")
     missing_values_df.to_csv(export_dir / "missing_values.csv")
     with zipfile.ZipFile(work_dir / "downloaded_tiffs.zip", "w") as zipf:
-        for file in export_dir.iterdir():
-            zipf.write(file, file.name)
+        for folder in export_dir.iterdir():
+            zipf.write(folder, folder.name)
+            for file in folder.iterdir():
+                zipf.write(file, folder / file.name)
 
 
 
