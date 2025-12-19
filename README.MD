@@ -21,8 +21,8 @@ Voor vragen: `haasnoot@hkv.nl`.
 
 Stappen plan voor het aanmaken van een api key.
 
-- Login op [https://www.ldo.overstromingsinformatie.nl/](https://www.ldo.overstromingsinformatie.nl/), dit loop via bij12.
-- Ga naar [https://www.ldo.overstromingsinformatie.nl/auth/](https://www.ldo.overstromingsinformatie.nl/auth/).
+- Login op [https://ldo.overstromingsinformatie.nl/](https://ldo.overstromingsinformatie.nl/), dit loop via bij12.
+- Ga naar [https://ldo.overstromingsinformatie.nl/auth/](https://ldo.overstromingsinformatie.nl/auth/).
 - Scrol naar beneden onder `V1` ,dan `POST auth/v1/personalapikeys` (in het groen) en klik deze open.
 - klik op `try it out` en vervang body met:
 
@@ -62,7 +62,7 @@ Stappen plan voor het aanmaken van een api key.
   - `TENANT = 2` voor RWS
   ...
 
-meer informatie staat onderaan of op de [docs](https://www.ldo.overstromingsinformatie.nl/api/v1/docs)
+meer informatie staat onderaan of op de [docs](https://ldo.overstromingsinformatie.nl/api/v1/docs)
 
 ## License
 
