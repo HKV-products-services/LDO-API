@@ -10,8 +10,8 @@ from update_local_bulk_LDO import haal_scenarios_op, haal_token_op, export_uit_L
 
 """
 Stappen plan voor het aanmaken van een api key.
-- Login op https://www.overstromingsinformatie.nl/, dit loop via bij12.
-- Ga naar https://www.overstromingsinformatie.nl/auth/
+- Login op https://www.ldo.overstromingsinformatie.nl/, dit loop via bij12.
+- Ga naar https://www.ldo.overstromingsinformatie.nl/auth/
 - Scrol naar beneden onder `V1` ,dan `POST auth/v1/personalapikeys` (in het groen) en klik deze open.
 - klik op `try it out` en vervang body met:
 ```json
@@ -41,7 +41,7 @@ Stappen plan voor het aanmaken van een api key.
 }
 ```
 - Bewaar die hele `'key'` in een bestand die `.env` heet, zie `.env.example` voor het formaat.
-    meer informatie staat onderaan of op de docs: https://www.overstromingsinformatie.nl/api/v1/docs
+    meer informatie staat onderaan of op de docs: https://www.ldo.overstromingsinformatie.nl/api/v1/docs
 
 - Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele aan 
     te passen. Deze kan ook in de `.env` file worden gezet.

@@ -15,11 +15,11 @@ from typing import Optional
 from pathlib import Path
 
 """
-Python bestand met helper functies voor het exporteren van scenario's uit de LDO via de API van www.overstromingsinformatie.nl
+Python bestand met helper functies voor het exporteren van scenario's uit de LDO via de API van www.ldo.overstromingsinformatie.nl
 Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor stappen plan voor het aanmaken van een api key.
 """
 
-server = "https://www.overstromingsinformatie.nl"
+server = "https://www.ldo.overstromingsinformatie.nl"
 
 
 def get_scenario_subset(mode, limit_per_request, offset, headers, extra_filter=""):
