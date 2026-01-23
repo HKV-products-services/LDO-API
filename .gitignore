@@ -7,4 +7,7 @@ old*/
 # other folders
 __pycache__
 downloaded_tiffs
+downloaded_tiffs*
 log_*.txt
+*.xlsx
+hidden_*

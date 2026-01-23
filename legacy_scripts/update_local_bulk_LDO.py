@@ -10,7 +10,7 @@ Download de bulk export en voegt dit toe aan een bestaande export.
 
 from pathlib import Path
 import zipfile
-from export_LDO import (
+from ..export_LDO import (
     get_scenario_list,
     combine_functions_start_export,
     combine_functions_download_export,

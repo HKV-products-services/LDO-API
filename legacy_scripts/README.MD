@@ -6,10 +6,14 @@ Voor het raadplegen van het LDO via de API zijn voor LIWO een aantal scripts ont
 
 De volgende gebruiken de functies uit `export_LDO.py` en runnen bepaalde functionaliteit:
 
-- `update_local_bulk_LDO.py` download de bulk export en voegt dit toe aan een bestaande export.
-- `download_LDO_bulk.py` download de bulk export van specifieke scenarios.
-- `download_LDO_ssm_tiffs.py` download tiff bestanden gegenereerd door ssm in het LDO.
+- `download_LDO_custom.py` is op dit moment het aanbevolen script, hiermee wordt het snelst data gedownload en zitten ook ssm resultaten in.
 - `export_SSM_metadata_uit_LDO_met_API.py` exporteren van ssm metadata.
+
+Daarnaast zijn ook legacy alternatieven voor het downloaden:
+
+- `update_local_bulk_LDO.py` download de bulk export en voegt dit toe aan een bestaande export.
+- `download_LDO_bulk.py` download de bulk export van specifieke scenarios, (niet aanbevolen, deze gebruikt de functies van het LDO die traag zijn)
+- `download_LDO_ssm_tiffs.py` download tiff bestanden gegenereerd door ssm in het LDO.
 
 Alle notebooks zijn identiek, alleen met meer uitleg.
 
