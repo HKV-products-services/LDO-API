@@ -187,8 +187,9 @@ def export_uit_LDO_custom(
     with zipfile.ZipFile(work_dir / "downloaded_tiffs.zip", "w") as zipf:
         for folder in export_dir.iterdir():
             zipf.write(folder, folder.name)
-            for file in folder.iterdir():
-                zipf.write(file, folder / file.name)
+            if folder.is_dir():
+                for file in folder.iterdir():
+                    zipf.write(file, folder.name  + "/" +  file.name )
 
 
 

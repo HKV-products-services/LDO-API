@@ -11,3 +11,4 @@ downloaded_tiffs*
 log_*.txt
 *.xlsx
 hidden_*
+.vscode

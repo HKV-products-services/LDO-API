@@ -1,6 +1,7 @@
 # LDO API scripts
 
 Voor het raadplegen van het LDO via de API zijn voor LIWO een aantal scripts ontwikkeld.
+Vragen of opmerkingen? Laat een issue achter of neem contact op met `haasnoot@hkv.nl`.
 
 - `export_LDO.py` bevat functies voor interactie met de API.
 
@@ -18,8 +19,6 @@ Daarnaast zijn ook legacy alternatieven voor het downloaden:
 Alle notebooks zijn identiek, alleen met meer uitleg.
 
 - `delete_or_archive_LDO_bulk.ipynb` verwijderd of archiveert bulk downloads van het LDO portaal.
-
-Voor vragen: `haasnoot@hkv.nl`.
 
 ## API key aan maken
 
