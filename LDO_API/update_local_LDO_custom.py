@@ -11,7 +11,13 @@ Download de bulk export en voegt dit toe aan een bestaande export.
 import logging
 from pathlib import Path
 import zipfile
-from LDO_API.export_LDO import download_tif, get_all_metadata, get_scenario_list, get_layer_names, get_file_url
+from LDO_API.export_LDO import (
+    download_tif,
+    get_all_metadata,
+    get_scenario_list,
+    get_layer_names,
+    get_file_url,
+)
 import pandas as pd
 import requests
 import shutil
@@ -34,7 +40,7 @@ Stappen plan voor het aanmaken van een api key.
 - Pas de datum en name aan waar nodig
 - klik op `Excecute` in het blauw
 - scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 als het gelukt is.
-- In de response body staat: 
+- In de response body staat:
 ```json
 {
   "prefix": "xxxxx",
@@ -52,7 +58,7 @@ Stappen plan voor het aanmaken van een api key.
 meer informatie staat onderaan of op de docs: https://ldo.overstromingsinformatie.nl/api/v1/docs
 - Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele
     aan te passen. Deze kan ook in de `.env` file worden gezet.
-  - `TENANT = 0` voor beheerders? 
+  - `TENANT = 0` voor beheerders?
   - `TENANT = 1` voor LIWO
   - `TENANT = 2` voor RWS
   ...
@@ -70,21 +76,30 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-def haal_token_op(api_key: str, tenant:int) -> dict:
+def haal_token_op(api_key: str, tenant: int) -> dict:
     """Haal de access token op voor www.ldo.overstromingsinformatie.nl gegeven de api key"""
     url_auth = "https://ldo.overstromingsinformatie.nl/auth/v1/token/"
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     response = requests.post(
-        url=url_auth, headers=headers, json={"tenant": tenant}, auth=("__key__", api_key)
+        url=url_auth,
+        headers=headers,
+        json={"tenant": tenant},
+        auth=("__key__", api_key),
     )
     try:
         id_token = response.json()["access"]
     except KeyError:
         res_error = response.text
-        if '"tenant"' in res_error and 'Invalid pk' in res_error and 'object does not exist.' in res_error: 
+        if (
+            '"tenant"' in res_error
+            and "Invalid pk" in res_error
+            and "object does not exist." in res_error
+        ):
             tenant = res_error.removeprefix('{"tenant":["Invalid pk \\"')[0]
             logger.error(f"Invalid tenant {tenant} for the provided API key.")
-            raise UserWarning(f"Invalid tenant {tenant} for the provided API key, adjust the TENANT variable accordingly.")
+            raise UserWarning(
+                f"Invalid tenant {tenant} for the provided API key, adjust the TENANT variable accordingly."
+            )
         else:
             logger.error(f"Failed to retrieve access token: {res_error}")
             raise UserWarning(f"Failed to retrieve access token: {res_error}")
@@ -130,9 +145,11 @@ def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.Da
     data = {ids: get_layer_names(ids, headers) for ids in nieuwe_scenarios}
     max_length = max([len(data[ids]) for ids in data.keys()])
     # Fill each names list to max_length with None
-    data = {ids: list(name) + [None] * (max_length - len(name)) for ids, name in data.items()}
+    data = {
+        ids: list(name) + [None] * (max_length - len(name))
+        for ids, name in data.items()
+    }
     return pd.DataFrame(data).T
-
 
 
 def export_uit_LDO_custom(
@@ -189,9 +206,7 @@ def export_uit_LDO_custom(
             zipf.write(folder, folder.name)
             if folder.is_dir():
                 for file in folder.iterdir():
-                    zipf.write(file, folder.name  + "/" +  file.name )
-
-
+                    zipf.write(file, folder.name + "/" + file.name)
 
 
 def voeg_zips_samen_verwijder_ouder(

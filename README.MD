@@ -3,22 +3,32 @@
 Voor het raadplegen van het LDO via de API zijn voor LIWO een aantal scripts ontwikkeld.
 Vragen of opmerkingen? Laat een issue achter of neem contact op met `haasnoot@hkv.nl`.
 
-- `export_LDO.py` bevat functies voor interactie met de API.
+- De package `LDO_API` bevat functies voor interactie met de API.
 
-De volgende gebruiken de functies uit `export_LDO.py` en runnen bepaalde functionaliteit:
+> mocht je deze via pip willen instaleren, laat het weten.
+
+## scripts
+
+De volgende scripts gebruiken de functies uit `LDO_API` en runnen bepaalde functionaliteit:
 
 - `download_LDO_custom.py` is op dit moment het aanbevolen script, hiermee wordt het snelst data gedownload en zitten ook ssm resultaten in.
-- `export_SSM_metadata_uit_LDO_met_API.py` exporteren van ssm metadata.
+- `export_SSM_metadata_uit_LDO_met_API.py` exporteren van ssm metadata
 
 Daarnaast zijn ook legacy alternatieven voor het downloaden:
 
 - `update_local_bulk_LDO.py` download de bulk export en voegt dit toe aan een bestaande export.
 - `download_LDO_bulk.py` download de bulk export van specifieke scenarios, (niet aanbevolen, deze gebruikt de functies van het LDO die traag zijn)
 - `download_LDO_ssm_tiffs.py` download tiff bestanden gegenereerd door ssm in het LDO.
-
-Alle notebooks zijn identiek, alleen met meer uitleg.
-
 - `delete_or_archive_LDO_bulk.ipynb` verwijderd of archiveert bulk downloads van het LDO portaal.
+
+Alle notebooks zijn nagenoeg identiek, alleen met meer uitleg.
+
+## Runnen van scripts
+
+Er zijn weinig dependencies dus de meeste bestaande python omgevingen kan dit draaien, clone de repo en run dan de scripts.
+Mocht je legacy scripts willen gebruiken op deze manier, verplaats deze dan naar de hoofdmap.
+
+Als alternatief kan je ook de pixi omgeving gebruiken, deze instaleert ook de package.
 
 ## API key aan maken
 

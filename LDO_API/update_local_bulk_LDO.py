@@ -36,7 +36,7 @@ Stappen plan voor het aanmaken van een api key.
 - Pas de datum en name aan waar nodig
 - klik op `Excecute` in het blauw
 - scrol naar beneden (maar nog in het zelfde groene vak), in de onderste 2 zwarte vlakken zie je response code 201 als het gelukt is.
-- In de response body staat: 
+- In de response body staat:
 ```json
 {
   "prefix": "xxxxx",
@@ -52,21 +52,24 @@ Stappen plan voor het aanmaken van een api key.
 ```
 - Bewaar die hele `'key'` in een bestand die `.env` heet, zie `.env.example` voor het formaat.
 meer informatie staat onderaan of op de docs: https://ldo.overstromingsinformatie.nl/api/v1/docs
-- Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele 
+- Afhankelijk via welke organisatie je toegang hebt, kan het nodig zijn om in de code de `TENANT` variabele
     aan te passen. Deze kan ook in de `.env` file worden gezet.
-  - `TENANT = 0` voor beheerders? 
+  - `TENANT = 0` voor beheerders?
   - `TENANT = 1` voor LIWO
   - `TENANT = 2` voor RWS
   ...
 """
 
 
-def haal_token_op(api_key: str, tenant:int) -> dict:
+def haal_token_op(api_key: str, tenant: int) -> dict:
     """Haal de access token op voor www.ldo.overstromingsinformatie.nl gegeven de api key"""
     url_auth = "https://ldo.overstromingsinformatie.nl/auth/v1/token/"
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     response = requests.post(
-        url=url_auth, headers=headers, json={"tenant": tenant}, auth=("__key__", api_key)
+        url=url_auth,
+        headers=headers,
+        json={"tenant": tenant},
+        auth=("__key__", api_key),
     )
     try:
         id_token = response.json()["access"]
@@ -128,7 +131,6 @@ def export_uit_LDO_bulk(
         current_dir / f"export_{export_id}.zip"
         for export_id in nieuwe_scenarios_export_ids
     ]
-
 
 
 def voeg_zips_samen_verwijder_ouder(

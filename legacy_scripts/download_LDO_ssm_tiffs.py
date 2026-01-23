@@ -34,6 +34,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 
+
 def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) -> None:
     names_tiffs_ssm = [
         "Mortality.tif",
@@ -94,8 +95,6 @@ def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) 
 
 
 if __name__ == "__main__":
-
-
     # zet de LDO api key in de .env file
     if dotenv.load_dotenv():
         environmental_variables = dotenv.dotenv_values()
@@ -106,20 +105,23 @@ if __name__ == "__main__":
     headers = haal_token_op(LDO_api_key, tenant=TENANT)
 
     logger.info("haal scenarios op")
-    beschikbare_scenario_ids = haal_scenarios_op(
-        maximum=10_000, headers=headers
-    )  
+    beschikbare_scenario_ids = haal_scenarios_op(maximum=10_000, headers=headers)
 
     # geef de scenarios op om te exporteren:
-    export_scenarios = [345,346]
+    export_scenarios = [345, 346]
     # of gebruik de een subset:
     # export_scenarios = beschikbare_scenario_ids[:10]  # bijvoorbeeld de eerste 10 scenarios
     logger.info("Vergelijk scenarios")
-    overlap_scenarios = list(set(export_scenarios).intersection(beschikbare_scenario_ids))
-    niet_gevonden_scenarios = list(set(export_scenarios).difference(beschikbare_scenario_ids))
-    if len(niet_gevonden_scenarios) > 0: 
-        logger.warning(f'{len(niet_gevonden_scenarios)} scenarios niet gevonden in LDO: {niet_gevonden_scenarios}')
-
+    overlap_scenarios = list(
+        set(export_scenarios).intersection(beschikbare_scenario_ids)
+    )
+    niet_gevonden_scenarios = list(
+        set(export_scenarios).difference(beschikbare_scenario_ids)
+    )
+    if len(niet_gevonden_scenarios) > 0:
+        logger.warning(
+            f"{len(niet_gevonden_scenarios)} scenarios niet gevonden in LDO: {niet_gevonden_scenarios}"
+        )
 
     logger.info("Start export scenarios")
     lst_zips_nieuwe_export = export_tiffs(

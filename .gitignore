@@ -2,7 +2,7 @@
 *.zip
 old*/
 *.docx
-# env data 
+# env data
 .env
 # other folders
 __pycache__
