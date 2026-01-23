@@ -6,7 +6,7 @@ Jun, 2025
 import logging
 from pathlib import Path
 import dotenv
-from update_local_bulk_LDO import haal_scenarios_op, haal_token_op, export_uit_LDO_bulk
+from LDO_API.update_local_bulk_LDO import haal_scenarios_op, haal_token_op, export_uit_LDO_bulk
 
 """
 Stappen plan voor het aanmaken van een api key.

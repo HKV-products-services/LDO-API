@@ -6,7 +6,7 @@ Jun, 2025
 import logging
 from pathlib import Path
 import dotenv
-from update_local_LDO_custom import get_layer_names_from_scenario, haal_scenarios_op, haal_token_op, export_uit_LDO_custom
+from LDO_API.update_local_LDO_custom import get_layer_names_from_scenario, haal_scenarios_op, haal_token_op, export_uit_LDO_custom
 
 """
 Stappen plan voor het aanmaken van een api key.

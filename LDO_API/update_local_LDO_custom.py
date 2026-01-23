@@ -11,7 +11,7 @@ Download de bulk export en voegt dit toe aan een bestaande export.
 import logging
 from pathlib import Path
 import zipfile
-from export_LDO import download_tif, get_all_metadata, get_scenario_list, get_layer_names, get_file_url
+from LDO_API.export_LDO import download_tif, get_all_metadata, get_scenario_list, get_layer_names, get_file_url
 import pandas as pd
 import requests
 import shutil

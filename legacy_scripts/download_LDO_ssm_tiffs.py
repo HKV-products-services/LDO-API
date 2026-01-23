@@ -7,11 +7,11 @@ Download tiff bestanden gegenereerd door ssm/LDO.
 
 from pathlib import Path
 import zipfile
-from export_LDO import (
+from LDO_API.export_LDO import (
     get_file_url,
     download_tif,
 )
-from update_local_bulk_LDO import haal_scenarios_op, haal_token_op
+from LDO_API.update_local_bulk_LDO import haal_scenarios_op, haal_token_op
 import pandas as pd
 import dotenv
 from tqdm import tqdm

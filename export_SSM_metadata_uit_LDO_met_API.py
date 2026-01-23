@@ -5,8 +5,8 @@ Jun, 2025
 
 import pandas as pd
 import dotenv
-from update_local_bulk_LDO import haal_scenarios_op, haal_token_op
-from export_LDO import get_ssm
+from LDO_API.update_local_LDO_custom import haal_scenarios_op, haal_token_op
+from LDO_API import get_ssm
 
 """
 Stappen plan voor het aanmaken van een api key.
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # haal de API key op uit de .env file
     if dotenv.load_dotenv():
         environmental_variables = dotenv.dotenv_values()
-        LDO_api_key = environmental_variables["LDO_api_key"]\
+        LDO_api_key = environmental_variables["LDO_api_key"]
     # Of zet hier de API key handmatig in
     # LDO_api_key = "abcd"
     TENANT : int  = 1 # 0, 1, 2 ...
