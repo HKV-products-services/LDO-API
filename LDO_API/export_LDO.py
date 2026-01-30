@@ -13,6 +13,8 @@ import time
 from datetime import datetime as date
 from typing import Optional
 from pathlib import Path
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 """
 Python bestand met helper functies voor het exporteren van scenario's uit de LDO via de API van www.ldo.overstromingsinformatie.nl
@@ -22,9 +24,32 @@ Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor st
 server = "https://ldo.overstromingsinformatie.nl"
 
 
+def get_session():
+    """Create a global requests session with connection pooling and retry logic"""
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST", "PATCH", "DELETE"],
+    )
+    adapter = HTTPAdapter(
+        max_retries=retry_strategy,
+        pool_connections=10,
+        pool_maxsize=10,
+        pool_block=False,
+    )
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
+_session = get_session()
+
+
 def get_scenario_subset(mode, limit_per_request, offset, headers, extra_filter=""):
     """Get list of scenarios status landelijk gebruik (mode=public)"""
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/scenarios?mode={mode}&limit={limit_per_request}&offset={offset}&order_by=id{extra_filter}",
         headers=headers,
     )
@@ -68,7 +93,7 @@ def create_new_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
         }
     )
 
-    response = requests.post(
+    response = _session.post(
         f"{server}/api/v1/bulk-exports", headers=headers, data=body
     )
 
@@ -87,7 +112,7 @@ def create_new_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
 def delete_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
     """delete given bulk-export"""
 
-    response = requests.delete(f"{server}/api/v1/bulk-exports/{index}", headers=headers)
+    response = _session.delete(f"{server}/api/v1/bulk-exports/{index}", headers=headers)
 
     if int(response.status_code) == 204:
         success = True
@@ -107,7 +132,7 @@ def delete_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
 def delete_bulk_export_errors(headers: dict, index: int) -> tuple[str, str, str]:
     """delete errors of given bulk-export"""
 
-    response = requests.delete(
+    response = _session.delete(
         f"{server}/api/v1/bulk-exports/{index}/errors", headers=headers
     )
 
@@ -130,7 +155,7 @@ def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
     """archvie given bulk-export"""
 
     body = json.dumps({"status": "archived"})
-    response = requests.patch(
+    response = _session.patch(
         f"{server}/api/v1/bulk-exports/{index}", headers=headers, data=body
     )
 
@@ -152,13 +177,13 @@ def archive_bulk_export(headers: dict, index: int) -> tuple[str, str, str]:
 def list_bulk_export(headers: dict) -> tuple[str, str, str]:
     """lists all the bulk-export"""
 
-    response = requests.get(f"{server}/api/v1/bulk-exports", headers=headers)
+    response = _session.get(f"{server}/api/v1/bulk-exports", headers=headers)
 
     if response.status_code == 200:
         data = response.json()["items"]
         total, limit = response.json()["total"], response.json()["limit"]
         for i in range(limit, total + limit, limit):
-            response = requests.get(
+            response = _session.get(
                 f"{server}/api/v1/bulk-exports?limit={limit}&offset={i}",
                 headers=headers,
             )
@@ -177,7 +202,7 @@ def list_bulk_export(headers: dict) -> tuple[str, str, str]:
 
 def check_export_id(export_id: str, headers: dict) -> requests.Response:
     """Get bulk export by id"""
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/bulk-exports/{export_id}", headers=headers
     )
 
@@ -206,7 +231,7 @@ def add_ids_to_export(
         }
     )
 
-    response = requests.patch(
+    response = _session.patch(
         f"{server}/api/v1/bulk-exports/{export_id}", headers=headers, data=body
     )
 
@@ -229,12 +254,12 @@ def start_export(
         {"name": export_name, "description": export_description, "status": "submitted"}
     )
 
-    response = requests.patch(
+    response = _session.patch(
         f"{server}/api/v1/bulk-exports/{export_id}", headers=headers, data=export_body
     )
 
     if response.status_code == 200:
-        response = requests.get(
+        response = _session.get(
             f"{server}/api/v1/bulk-exports/{export_id}", headers=headers
         )
         if response.status_code == 200:
@@ -255,7 +280,7 @@ def wait_for_export(
 ) -> Optional[requests.Response]:
     """wacht tot export klaar is voor download"""
     while status == "submitted":
-        response = requests.get(
+        response = _session.get(
             f"{server}/api/v1/bulk-exports/{export_id}", headers=headers
         )
         if response.status_code == 200:
@@ -273,7 +298,7 @@ def wait_for_export(
 
 def get_file_name(export_id: str, headers: dict, export_body: dict) -> str:
     """haal de bestandsnaam van de export op"""
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/bulk-exports/{export_id}", headers=headers, data=export_body
     )
 
@@ -290,7 +315,7 @@ def get_download_url(
     server: str, export_id: str, headers: dict, export_body: dict
 ) -> str:
     """haal de download URL op van de export"""
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/bulk-exports/{export_id}/files/export_{export_id}.zip/download",
         headers=headers,
         data=export_body,
@@ -308,7 +333,7 @@ def get_download_url(
 
 def download_zip(url: str, export_id: str) -> None:
     """download het zip bestand"""
-    response = requests.get(url, stream=True)
+    response = _session.get(url, stream=True)
     with open(f"export_{export_id}.zip", "wb") as f:
         for chunk in response.iter_content(chunk_size=512):
             if chunk:  # filter out keep-alive new chunks
@@ -320,7 +345,7 @@ def get_file_url(scenario_id: str, layer_name: str, headers: dict) -> str:
 
     Specifiek voor "Mortality.tif","Total_damage.tif","Total_victims.tif","Total_affected.tif"
     """
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/scenarios/{scenario_id}/files/{layer_name}/download",
         headers=headers,
     )
@@ -334,7 +359,7 @@ def get_file_url(scenario_id: str, layer_name: str, headers: dict) -> str:
 
 def download_tif(url: str, name: str, export_id: str, work_dir: Path) -> None:
     """download een tif bestand"""
-    response = requests.get(url, stream=True)
+    response = _session.get(url, stream=True)
 
     export_path = work_dir / f"{export_id}"
     if not export_path.exists():
@@ -344,16 +369,18 @@ def download_tif(url: str, name: str, export_id: str, work_dir: Path) -> None:
     else:
         new_name = name
     fname = export_path / new_name
-
-    with open(fname, "wb") as f:
-        for chunk in response.iter_content(chunk_size=512):
-            if chunk:  # filter out keep-alive new chunks
-                f.write(chunk)
+    try:
+        with open(fname, "wb") as f:
+            for chunk in response.iter_content(chunk_size=512):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+    finally:
+        response.close()
 
 
 def get_ssm(scenario_id: str, headers: dict) -> str:
     """haal de bestandsnaam van de export op"""
-    response = requests.get(
+    response = _session.get(
         f"{server}/api/v1/scenarios/{scenario_id}/external-processings", headers=headers
     )
 
@@ -413,7 +440,7 @@ def status_update(export_id: str, headers: dict) -> str:
     """haal de status van de export op"""
 
     body = {"status": "quality_checked"}
-    response = requests.patch(
+    response = _session.patch(
         f"{server}/api/v1/scenarios/{export_id}/status",
         headers=headers,
         body=body,
@@ -429,7 +456,7 @@ def status_update(export_id: str, headers: dict) -> str:
 
 def get_layer_names(export_id: str, headers: dict) -> str:
     """haal de bestandsnaam van een scenario op om vervolgens te exporteren"""
-    response = requests.get(f"{server}/api/v1/scenarios/{export_id}", headers=headers)
+    response = _session.get(f"{server}/api/v1/scenarios/{export_id}", headers=headers)
 
     if response.status_code == 200:
         names = response.json()["files"].keys()
@@ -443,7 +470,7 @@ def get_all_metadata(scenario_ids: list, fname: Path, headers: dict) -> str:
     """haal de bestanden van de export op"""
     data = dict()
     data["id"] = scenario_ids
-    response = requests.post(
+    response = _session.post(
         f"{server}/api/v1/scenarios/export",
         data=json.dumps(data).replace(" ", ""),
         headers=headers,

@@ -11,6 +11,7 @@ license-file = "LICENSE"
 [tasks]
 # Installation
 install = "pre-commit install"
+jupyterlab = "python -m jupyterlab"
 
 # Docs
 pre-commit = "pre-commit run --all-files"

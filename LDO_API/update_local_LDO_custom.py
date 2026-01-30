@@ -10,6 +10,7 @@ Download de bulk export en voegt dit toe aan een bestaande export.
 
 import logging
 from pathlib import Path
+import time
 import zipfile
 from LDO_API.export_LDO import (
     download_tif,
@@ -142,7 +143,10 @@ def vergelijke_nieuwe_en_huidige(
 
 def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.DataFrame:
     """Haal de bestandsnamen van de scenarios op om vervolgens te exporteren"""
-    data = {ids: get_layer_names(ids, headers) for ids in nieuwe_scenarios}
+    data = {}
+    for ids in nieuwe_scenarios:
+        data[ids] = get_layer_names(ids, headers)
+        time.sleep(0.001)  # om niet te snel te gaan
     max_length = max([len(data[ids]) for ids in data.keys()])
     # Fill each names list to max_length with None
     data = {
@@ -153,34 +157,39 @@ def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.Da
 
 
 def export_uit_LDO_custom(
-    df_layer_names: pd.DataFrame, work_dir: Path, headers: dict
+    df_layer_names: pd.DataFrame, work_dir: Path, headers: dict, endings_to_skip=None
 ) -> None:
     export_dir = work_dir / "downloaded_tiffs"
     export_dir.mkdir(exist_ok=True)
     missing_values = {}
     error = None
+    if endings_to_skip is None:
+        endings_to_skip = []
     try:
         for scenario_id, row in tqdm(df_layer_names.iterrows()):
             for file_name in row.tolist():
                 # valid_name = validate_file_name(file_name)
-                if file_name is None or file_name == "":
+                if isinstance(file_name, float) or file_name is None or file_name == "":
+                    continue
+                elif file_name.split(".")[-1].lower() in endings_to_skip:
                     continue
                 # Check if the file name is valid
                 status_code, url = get_file_url(scenario_id, file_name, headers)
                 if status_code == 200:
                     try:
                         download_tif(url, file_name, scenario_id, export_dir)
+                        time.sleep(0.01)  # om niet te snel te gaan
                     except ConnectionError as e:
                         logger.error(f"Connection error during download: {e}")
                         # try again
                         try:
                             download_tif(url, file_name, scenario_id, export_dir)
+                            time.sleep(0.05)
                         except ConnectionError as e:
                             logger.error(
                                 f"Connection error during download (2nd try): {e}, {url}, {scenario_id}"
                             )
                             continue
-
                 else:
                     logger.info(
                         f"Failed to download {file_name} for scenario {scenario_id}: {url}"
