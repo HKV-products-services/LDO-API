@@ -12,3 +12,4 @@ log_*.txt
 *.xlsx
 hidden_*
 .vscode
+.ipynb_checkpoints/*

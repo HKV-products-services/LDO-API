@@ -27,7 +27,8 @@ pre-commit = "pre-commit run --all-files"
 #]
 
 [feature.common.dependencies]
-python = ">=3.11"
+python = ">=3.11,<3.14"
+jupyterlab = "*"
 ipykernel ="*"
 ipywidgets ="*"
 nbclient ="*"

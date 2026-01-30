@@ -56,7 +56,7 @@ aan te passen. Deze kan ook in de `.env` file worden gezet.
 """
 
 
-if __name__ == "__main__":
+def main():
     current_dir = Path.cwd()
 
     # Set up basic logger
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(
-        maximum=10_000, headers=headers
+        maximum=12_000, headers=headers
     )  # misschien later meer dan 10_000?
 
     logger.info("Vergelijk scenarios")
@@ -107,3 +107,8 @@ if __name__ == "__main__":
         work_dir=current_dir,
         headers=headers,
     )
+    lst_zips_nieuwe_export
+
+
+if __name__ == "__main__":
+    main()
