@@ -123,6 +123,7 @@ def download(logger, beschikbare_scenario_ids, current_dir, headers):
             "docx",
             "xlsx",
             "nc",
+            "zip",
         ],
         files_to_skip=["dem.tif", "dem_clip.tif"],
     )
