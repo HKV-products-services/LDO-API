@@ -126,6 +126,17 @@ def download(logger, beschikbare_scenario_ids, current_dir, headers):
             "zip",
         ],
         files_to_skip=["dem.tif", "dem_clip.tif"],
+        wanted_list=[
+            "arrival_times.tiff",
+            "max_velocity.tiff",
+            "max_waterdepth.tiff",
+            "Mortality.tif",
+            "rate_of_rise.tiff",
+            "rise_period.tiff",
+            "Total_affected.tif",
+            "Total_damage.tif",
+            "Total_victims.tif",
+        ],
     )
     return nieuwe_scenarios_ids
 

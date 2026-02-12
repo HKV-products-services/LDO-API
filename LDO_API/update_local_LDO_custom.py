@@ -162,6 +162,7 @@ def export_uit_LDO_custom(
     headers: dict,
     endings_to_skip=None,
     files_to_skip=None,
+    wanted_list=None,
 ) -> None:
     export_dir = work_dir / "downloaded_tiffs"
     export_dir.mkdir(exist_ok=True)
@@ -179,6 +180,8 @@ def export_uit_LDO_custom(
                 elif file_name.split(".")[-1].lower() in endings_to_skip:
                     continue
                 elif file_name in files_to_skip:
+                    continue
+                elif wanted_list and file_name not in wanted_list:
                     continue
                 status_code, url = get_file_url(scenario_id, file_name, headers)
                 if status_code == 200:
