@@ -66,7 +66,7 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
-    logger = logging.getLogger()
+    logger = logging.getLogger(name="LDO-API-download")
 
     # geef de scenarios op om te exporteren:
     export_scenarios = [345, 346]

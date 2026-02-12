@@ -74,7 +74,7 @@ current_dir = Path(__file__).parent
 #     level=logging.INFO,
 #     format="%(asctime)s - %(levelname)s - %(message)s",
 # )
-logger = logging.getLogger()
+logger = logging.getLogger(name="LDO-API-download")
 
 
 def haal_token_op(api_key: str, tenant: int) -> dict:

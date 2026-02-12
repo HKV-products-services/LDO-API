@@ -27,12 +27,12 @@ Zie `export_SSM_metadata_uit_LDO_met_API.py of update_local_bulk_LOD.py` voor st
 # Set up basic logger
 current_dir = Path.cwd()
 log_file = current_dir / "log_tiff.txt"
-logging.basicConfig(
-    filename=log_file,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger()
+# logging.basicConfig(
+#     filename=log_file,
+#     level=logging.INFO,
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+# )
+logger = logging.getLogger(name="LDO-API-download")
 
 
 def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) -> None:
