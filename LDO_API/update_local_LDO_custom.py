@@ -157,7 +157,11 @@ def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.Da
 
 
 def export_uit_LDO_custom(
-    df_layer_names: pd.DataFrame, work_dir: Path, headers: dict, endings_to_skip=None
+    df_layer_names: pd.DataFrame,
+    work_dir: Path,
+    headers: dict,
+    endings_to_skip=None,
+    files_to_skip=None,
 ) -> None:
     export_dir = work_dir / "downloaded_tiffs"
     export_dir.mkdir(exist_ok=True)
@@ -165,15 +169,17 @@ def export_uit_LDO_custom(
     error = None
     if endings_to_skip is None:
         endings_to_skip = []
+    if files_to_skip is None:
+        files_to_skip = []
     try:
         for scenario_id, row in tqdm(df_layer_names.iterrows()):
             for file_name in row.tolist():
-                # valid_name = validate_file_name(file_name)
                 if isinstance(file_name, float) or file_name is None or file_name == "":
                     continue
                 elif file_name.split(".")[-1].lower() in endings_to_skip:
                     continue
-                # Check if the file name is valid
+                elif file_name in files_to_skip:
+                    continue
                 status_code, url = get_file_url(scenario_id, file_name, headers)
                 if status_code == 200:
                     try:

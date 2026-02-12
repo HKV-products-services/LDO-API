@@ -55,6 +55,7 @@ aan te passen. Deze kan ook in de `.env` file worden gezet.
   ...
 """
 
+
 def main():
     current_dir = Path.cwd()
 
@@ -81,21 +82,26 @@ def main():
     beschikbare_scenario_ids = haal_scenarios_op(
         maximum=12_000, headers=headers
     )  # misschien later meer dan 10_000?
-    nieuwe_scenarios_ids = beschikbare_scenario_ids 
+    nieuwe_scenarios_ids = beschikbare_scenario_ids
     while len(nieuwe_scenarios_ids) > 0:
         nieuwe_scenarios_ids = download(
-        logger,
-        beschikbare_scenario_ids,
-        current_dir,
-        headers,
-    )
-    
+            logger,
+            beschikbare_scenario_ids,
+            current_dir,
+            headers,
+        )
+
+
 def download(logger, beschikbare_scenario_ids, current_dir, headers):
     logger.info(f"totaal {len(beschikbare_scenario_ids)} ids")
     download_dir = current_dir / "downloaded_tiffs"
-    downloaded_scenarios = list([int(f.name) for f in download_dir.glob("*") if f.is_dir()])
+    downloaded_scenarios = list(
+        [int(f.name) for f in download_dir.glob("*") if f.is_dir()]
+    )
     logger.info(f"totaal {len(downloaded_scenarios)} downloaded ids")
-    nieuwe_scenarios_ids = set(beschikbare_scenario_ids).difference(downloaded_scenarios) # alles # [-2:]  # de laatste twee scenario's
+    nieuwe_scenarios_ids = set(beschikbare_scenario_ids).difference(
+        downloaded_scenarios
+    )  # alles # [-2:]  # de laatste twee scenario's
     logger.info(f"totaal {len(nieuwe_scenarios_ids)} nieuwe ids")
 
     df_layer_names = get_layer_names_from_scenario(
@@ -103,17 +109,25 @@ def download(logger, beschikbare_scenario_ids, current_dir, headers):
         headers=headers,
     )
 
-    df_layer_names.to_csv(current_dir /"downloaded_tiffs" / "layer_names_per_scenario.csv", index=False)
+    df_layer_names.to_csv(
+        current_dir / "downloaded_tiffs" / "layer_names_per_scenario.csv", index=False
+    )
 
     logger.info("Start export scenarios")
     export_uit_LDO_custom(
         df_layer_names=df_layer_names,
         work_dir=current_dir,
         headers=headers,
-        endings_to_skip=["pdf", "docx", "xlsx","nc",],
-
+        endings_to_skip=[
+            "pdf",
+            "docx",
+            "xlsx",
+            "nc",
+        ],
+        files_to_skip=["dem.tif", "dem_clip.tif"],
     )
     return nieuwe_scenarios_ids
+
 
 if __name__ == "__main__":
     main()
