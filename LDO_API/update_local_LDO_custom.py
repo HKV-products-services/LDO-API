@@ -164,6 +164,15 @@ def export_uit_LDO_custom(
     files_to_skip=None,
     wanted_list=None,
 ) -> None:
+    """
+    When downloading the files, we skip certain file types, names or only download wanted files.
+    for this use:
+    - `endings_to_skip` : list of file extensions to skip, e.g. ["pdf", "docx", "xlsx", "nc", "zip"]
+    - `files_to_skip` : list of file names to skip, e.g. ["dem.tif", "dem_clip.tif"]
+    - `wanted_list` : list of file names to only download these, e.g. ["Total_damage.tif", "Total_victims.tif"]
+    These can be used together or not at all.
+    The order they arementioned above is also the order of which they are applied, so if a file is in the wanted list but also in the files_to_skip, it will be skipped.
+    """
     export_dir = work_dir / "downloaded_tiffs"
     export_dir.mkdir(exist_ok=True)
     missing_values = {}
