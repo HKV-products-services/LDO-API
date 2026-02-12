@@ -68,12 +68,12 @@ meer informatie staat onderaan of op de docs: https://ldo.overstromingsinformati
 current_dir = Path(__file__).parent
 
 # Set up basic logger
-log_file = current_dir / "log_bulk.txt"
-logging.basicConfig(
-    filename=log_file,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+# log_file = current_dir / "log_bulk.txt"
+# logging.basicConfig(
+#     filename=log_file,
+#     level=logging.INFO,
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+# )
 logger = logging.getLogger()
 
 

@@ -106,6 +106,14 @@ def main():
         df_layer_names=df_layer_names,
         work_dir=current_dir,
         headers=headers,
+        # for now we skip nc & dem files, but if you want these remove the kwargs below
+        endings_to_skip=[
+            # "pdf",
+            # "docx",
+            # "xlsx",
+            "nc",
+        ],
+        files_to_skip=["dem.tif", "dem_clip.tif"],
     )
     lst_zips_nieuwe_export
 
