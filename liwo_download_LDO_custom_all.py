@@ -63,7 +63,7 @@ def main():
     log_file = current_dir / "log_bulk.txt"
     logging.basicConfig(
         filename=log_file,
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
     logger = logging.getLogger(name="LDO-API-download")
@@ -77,22 +77,30 @@ def main():
         TENANT = int(environmental_variables.get("TENANT", 1))
 
     headers = haal_token_op(LDO_api_key, tenant=TENANT)
-
     logger.info("haal scenarios op")
     beschikbare_scenario_ids = haal_scenarios_op(
         maximum=12_000, headers=headers
     )  # misschien later meer dan 10_000?
+
     nieuwe_scenarios_ids = beschikbare_scenario_ids
-    while len(nieuwe_scenarios_ids) > 0:
+    ## test script
+    #beschikbare_scenario_ids, nieuwe_scenarios_ids = [], [1]
+
+    # soms faalt de api op grote bestanden, dan helpt het om opnieuw te beginnen
+    max_iter = 1 
+    i = 0
+    while len(nieuwe_scenarios_ids) > 0 and i < max_iter:
         nieuwe_scenarios_ids = download(
-            logger,
-            beschikbare_scenario_ids,
-            current_dir,
-            headers,
-        )
+                logger,
+                beschikbare_scenario_ids,
+                current_dir,
+                headers,
+            )
+        i +=1
 
 
 def download(logger, beschikbare_scenario_ids, current_dir, headers):
+    
     logger.info(f"totaal {len(beschikbare_scenario_ids)} ids")
     download_dir = current_dir / "downloaded_tiffs"
     downloaded_scenarios = list(
@@ -101,9 +109,25 @@ def download(logger, beschikbare_scenario_ids, current_dir, headers):
     logger.info(f"totaal {len(downloaded_scenarios)} downloaded ids")
     nieuwe_scenarios_ids = set(beschikbare_scenario_ids).difference(
         downloaded_scenarios
-    )  # alles # [-2:]  # de laatste twee scenario's
+    )  
     logger.info(f"totaal {len(nieuwe_scenarios_ids)} nieuwe ids")
-
+    if False: 
+        nieuwe_scenarios_ids = [
+                    108930,
+                    109125,
+                    108945,
+                    108963,
+                    109094,
+                    108842,
+                    108857,
+                    108794,
+                    109527,
+                    109528,
+                    109529,
+                    109415,
+                    109416,
+                    109417,
+                    ]
     df_layer_names = get_layer_names_from_scenario(
         nieuwe_scenarios_ids,
         headers=headers,
@@ -130,13 +154,14 @@ def download(logger, beschikbare_scenario_ids, current_dir, headers):
             "arrival_times.tiff",
             "max_velocity.tiff",
             "max_waterdepth.tiff",
-            "Mortality.tif",
             "rate_of_rise.tiff",
             "rise_period.tiff",
+            "Mortality.tif",
             "Total_affected.tif",
             "Total_damage.tif",
             "Total_victims.tif",
         ],
+        zip_files=False
     )
     return nieuwe_scenarios_ids
 

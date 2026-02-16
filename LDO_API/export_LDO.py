@@ -454,16 +454,19 @@ def status_update(export_id: str, headers: dict) -> str:
         return None
 
 
-def get_layer_names(export_id: str, headers: dict) -> str:
+def get_layer_names(export_id: str, headers: dict) -> list:
     """haal de bestandsnaam van een scenario op om vervolgens te exporteren"""
     response = _session.get(f"{server}/api/v1/scenarios/{export_id}", headers=headers)
 
+    scenario_not_found_message = 'Could not find scenario with id='
     if response.status_code == 200:
         names = response.json()["files"].keys()
         return list(names)
+    elif response.status_code == 404 and scenario_not_found_message in response.text:
+        return ["SCENARIO_NOT_FOUND"]
     else:
         warnings.warn(f"{response.status_code}: {response.text}")
-        return None
+        return []
 
 
 def get_all_metadata(scenario_ids: list, fname: Path, headers: dict) -> str:

@@ -65,8 +65,7 @@ meer informatie staat onderaan of op de docs: https://ldo.overstromingsinformati
   ...
 """
 
-current_dir = Path(__file__).parent
-
+# current_dir = Path(__file__).parent
 # Set up basic logger
 # log_file = current_dir / "log_bulk.txt"
 # logging.basicConfig(
@@ -147,6 +146,7 @@ def get_layer_names_from_scenario(nieuwe_scenarios: str, headers: dict) -> pd.Da
     for ids in nieuwe_scenarios:
         data[ids] = get_layer_names(ids, headers)
         time.sleep(0.001)  # om niet te snel te gaan
+
     max_length = max([len(data[ids]) for ids in data.keys()])
     # Fill each names list to max_length with None
     data = {
@@ -163,6 +163,7 @@ def export_uit_LDO_custom(
     endings_to_skip=None,
     files_to_skip=None,
     wanted_list=None,
+    zip_files=True
 ) -> None:
     """
     When downloading the files, we skip certain file types, names or only download wanted files.
@@ -183,15 +184,32 @@ def export_uit_LDO_custom(
         files_to_skip = []
     try:
         for scenario_id, row in tqdm(df_layer_names.iterrows()):
+            logger.debug(f"retrieving {scenario_id}")
             for file_name in row.tolist():
+                # First check if we want to download
+                # ideally we move this to another part of the code  
+                # But we do want to collect these changes
+                # this is to deal with the scenario names
+                if isinstance(file_name, str) and file_name.startswith("scenario_"):
+                    file_name_wanted = "_".join(file_name.split("_")[2:])
+                else:
+                    file_name_wanted = file_name
+                # skip empty or nan
                 if isinstance(file_name, float) or file_name is None or file_name == "":
                     continue
+                elif file_name == "SCENARIO_NOT_FOUND":
+                    missing_values = add_missing_value(scenario_id, missing_values, file_name)
+                    continue
+                # skip endings
                 elif file_name.split(".")[-1].lower() in endings_to_skip:
                     continue
+                # skip specific files
                 elif file_name in files_to_skip:
                     continue
-                elif wanted_list and file_name not in wanted_list:
+                # only keep wanted files
+                elif wanted_list and file_name_wanted not in wanted_list:
                     continue
+                # If all checks pass, proceed
                 status_code, url = get_file_url(scenario_id, file_name, headers)
                 if status_code == 200:
                     try:
@@ -208,14 +226,13 @@ def export_uit_LDO_custom(
                                 f"Connection error during download (2nd try): {e}, {url}, {scenario_id}"
                             )
                             continue
+                    except Exception as e:
+                        logger.debug(f"Failed to downloadError: {e}")
                 else:
                     logger.info(
                         f"Failed to download {file_name} for scenario {scenario_id}: {url}"
                     )
-                    if scenario_id in missing_values:
-                        missing_values[scenario_id].append(file_name)
-                    else:
-                        missing_values[scenario_id] = [file_name]
+                    missing_values = add_missing_value(scenario_id, missing_values, file_name)
 
         error = get_all_metadata(
             scenario_ids=df_layer_names.index.tolist(),
@@ -228,13 +245,20 @@ def export_uit_LDO_custom(
     # still write the missing values to a csv & zip
     missing_values_df = pd.DataFrame.from_dict(missing_values, orient="index")
     missing_values_df.to_csv(export_dir / "missing_values.csv")
-    with zipfile.ZipFile(work_dir / "downloaded_tiffs.zip", "w") as zipf:
-        for folder in export_dir.iterdir():
-            zipf.write(folder, folder.name)
-            if folder.is_dir():
-                for file in folder.iterdir():
-                    zipf.write(file, folder.name + "/" + file.name)
+    if zip_files:
+        with zipfile.ZipFile(work_dir / "downloaded_tiffs.zip", "w") as zipf:
+            for folder in export_dir.iterdir():
+                zipf.write(folder, folder.name)
+                if folder.is_dir():
+                    for file in folder.iterdir():
+                        zipf.write(file, folder.name + "/" + file.name)
 
+def add_missing_value(scenario_id, missing_values, file_name):
+    if scenario_id in missing_values:
+        missing_values[scenario_id].append(file_name)
+    else:
+        missing_values[scenario_id] = [file_name]
+    return missing_values
 
 def voeg_zips_samen_verwijder_ouder(
     lst_zips_nieuwe_export: list,

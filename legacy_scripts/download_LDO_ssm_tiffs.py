@@ -29,7 +29,7 @@ current_dir = Path.cwd()
 log_file = current_dir / "log_tiff.txt"
 # logging.basicConfig(
 #     filename=log_file,
-#     level=logging.INFO,
+#     level=logging.DEBUG,
 #     format="%(asctime)s - %(levelname)s - %(message)s",
 # )
 logger = logging.getLogger(name="LDO-API-download")
@@ -59,6 +59,7 @@ def export_tiffs(beschikbare_scenario_ids: list, work_dir: Path, headers: dict) 
                 for name_suffix in calculated_postfix_names_tiffs
             ]
             all_names_tiffs = names_tiffs_ssm + calculated_names_tiffs
+            logger.debug(f"retrieving {scenario_id}")
             for name in all_names_tiffs:
                 status_code, url = get_file_url(scenario_id, name, headers)
                 if status_code == 200:

@@ -9,6 +9,8 @@ Bevat functies voor interactie met de API, worden gebruikt door andere scripts.
 import shutil
 import sys
 from pathlib import Path
+
+import pandas as pd
 from copy_ids import copy_ids
 
 
@@ -24,8 +26,19 @@ def main(args):
     scenarios = list(download_dir.glob("*"))
 
     for scenario in scenarios:
-        if int(scenario.name) in copy_ids:
-            shutil.copytree(scenario, to_dir / scenario.name)
+        if scenario.is_dir():
+            check_1 = int(scenario.name) in copy_ids
+            check_2 = not (to_dir / scenario.name).exists()
+            if check_1 and check_2:
+                shutil.copytree(scenario, to_dir / scenario.name)
+
+    copied_dirs = to_dir.glob("*")
+    copied_scenarios = [int(file.name) for file in copied_dirs]
+    missing_scenarios = set(copy_ids).difference(copied_scenarios)
+    print(f"Missing {len(missing_scenarios)} scenarios")
+    df = pd.DataFrame(list(missing_scenarios), columns=['ids'])
+    df.to_csv(current_dir / "missing_ids.csv")
+
 
 
 if __name__ == "__main__":

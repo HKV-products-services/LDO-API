@@ -8,6 +8,8 @@ old*/
 __pycache__
 downloaded_tiffs
 downloaded_tiffs*
+subset_tiffs*
+subset_tiffs
 log_*.txt
 *.xlsx
 hidden_*
