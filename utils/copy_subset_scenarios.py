@@ -33,7 +33,7 @@ def main(args):
                 shutil.copytree(scenario, to_dir / scenario.name)
 
     copied_dirs = to_dir.glob("*")
-    copied_scenarios = [int(file.name) for file in copied_dirs]
+    copied_scenarios = [int(file.name) for file in copied_dirs if file.is_dir()]
     missing_scenarios = set(copy_ids).difference(copied_scenarios)
     print(f"Missing {len(missing_scenarios)} scenarios")
     df = pd.DataFrame(list(missing_scenarios), columns=['ids'])
